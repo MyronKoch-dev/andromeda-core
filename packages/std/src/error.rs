@@ -528,6 +528,9 @@ pub enum ContractError {
     #[error("Duplicate initial balance addresses")]
     DuplicateInitialBalanceAddresses {},
 
+    #[error("Unsupported cw20 error: {err:?}")]
+    UnsupportedCw20Error { err: Cw20ContractError },
+
     // END CW20 ERRORS
     #[error("Invalid Module, {msg:?}")]
     InvalidModule { msg: Option<String> },
@@ -546,6 +549,9 @@ pub enum ContractError {
 
     #[error("Approval not found for: {spender}")]
     ApprovalNotFound { spender: String },
+
+    #[error("Unsupported cw721 error: {err:?}")]
+    UnsupportedCw721Error { err: Cw721ContractError },
 
     #[error("BidAlreadyPlaced")]
     BidAlreadyPlaced {},
@@ -798,7 +804,7 @@ impl From<Cw20ContractError> for ContractError {
                 ContractError::DuplicateInitialBalanceAddresses {}
             }
             Cw20ContractError::InvalidExpiration {} => ContractError::InvalidExpiration {},
-            _ => panic!("Unsupported cw20 error: {err:?}"),
+            _ => ContractError::UnsupportedCw20Error { err },
         }
     }
 }
@@ -820,7 +826,7 @@ impl From<Cw721ContractError> for ContractError {
                 ContractError::ApprovalNotFound { spender }
             }
             Cw721ContractError::Version(_) => ContractError::InvalidADOVersion { msg: None },
-            _ => panic!("Unsupported cw721 error: {err:?}"),
+            _ => ContractError::UnsupportedCw721Error { err },
             // Cw721ContractError::ParseError(parse_error) => todo!(),
             // Cw721ContractError::ParseIntError(parse_int_error) => todo!(),
             // Cw721ContractError::ParseBoolError(parse_bool_error) => todo!(),
