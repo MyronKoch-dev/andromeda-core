@@ -243,7 +243,9 @@ pub fn execute_purchase(
         );
     }
 
-    let purchased = amount_sent.checked_div(sale.exchange_rate).unwrap();
+    let purchased = amount_sent
+        .checked_div(sale.exchange_rate)
+        .ok_or(ContractError::InvalidRate {})?;
     let remainder = amount_sent.checked_sub(purchased.checked_mul(sale.exchange_rate)?)?;
 
     ensure!(
