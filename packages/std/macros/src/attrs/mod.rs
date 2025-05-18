@@ -47,6 +47,11 @@ pub fn derive_execute_attrs(input: TokenStream) -> TokenStream {
 
             TokenStream::from(expanded)
         }
-        _ => panic!("Attrs can only be derived for enums"),
+        _ => {
+            return quote! {
+                compile_error!("Attrs can only be derived for enums");
+            }
+            .into();
+        }
     }
 }
