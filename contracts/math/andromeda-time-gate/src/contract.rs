@@ -218,7 +218,7 @@ pub fn get_current_ado_path(deps: Deps, env: Env) -> Result<Addr, ContractError>
     );
 
     let current_time_nanos = env.block.time.nanos();
-    let cycle_start_nanos = cycle_start_time_milliseconds.nanos();
+    let cycle_start_nanos = cycle_start_time_milliseconds.nanos()?;
 
     let time_interval_nanos = match time_interval.checked_mul(1_000_000_000) {
         Some(val) => val,

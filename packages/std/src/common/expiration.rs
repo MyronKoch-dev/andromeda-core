@@ -82,7 +82,7 @@ pub fn expiration_from_milliseconds(time: Milliseconds) -> Result<Expiration, Co
         ContractError::InvalidExpirationTime {}
     );
 
-    Ok(Expiration::AtTime(Timestamp::from_nanos(time.nanos())))
+    Ok(Expiration::AtTime(Timestamp::from_nanos(time.nanos()?)))
 }
 
 pub fn block_to_expiration(block: &BlockInfo, model: Expiration) -> Option<Expiration> {
