@@ -397,7 +397,8 @@ fn test_marketplace_app_recipient() {
                 None,
                 Some(
                     Recipient::from_string(format!("./{}", splitter_component.name))
-                        .with_msg(mock_splitter_send_msg(None)),
+                        .with_msg(mock_splitter_send_msg(None))
+                        .unwrap(),
                 ),
             ),
         )

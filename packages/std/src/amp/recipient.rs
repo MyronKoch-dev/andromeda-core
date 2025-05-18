@@ -145,10 +145,10 @@ impl Recipient {
     }
 
     /// Adds a message to the recipient to be sent alongside any funds
-    pub fn with_msg(self, msg: impl Serialize) -> Self {
+    pub fn with_msg(self, msg: impl Serialize) -> Result<Self, ContractError> {
         let mut new_recip = self;
-        new_recip.msg = Some(to_json_binary(&msg).unwrap());
-        new_recip
+        new_recip.msg = Some(to_json_binary(&msg)?);
+        Ok(new_recip)
     }
 }
 
