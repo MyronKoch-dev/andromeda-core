@@ -89,6 +89,9 @@ impl ADOContract {
     }
 
     /// Handles execution of ADO specific messages.
+    ///
+    /// `AMPReceive` messages must be processed through [`Self::execute_amp_receive`]
+    /// instead.
     pub fn execute(
         &self,
         ctx: ExecuteContext,
@@ -109,7 +112,7 @@ impl ADOContract {
                     self.update_kernel_address(ctx.deps, ctx.info, address)
                 }
                 AndromedaMsg::Permissioning(msg) => self.execute_permissioning(ctx, msg),
-                AndromedaMsg::AMPReceive(_) => panic!("AMP Receive should be handled separately"),
+                AndromedaMsg::AMPReceive(_) => Err(ContractError::UnsupportedOperation {}),
             },
             _ => Err(ContractError::NotImplemented { msg: None }),
         }
@@ -466,6 +469,38 @@ mod tests {
                     .add_attribute("address", address),
                 res
             );
+        }
+
+        #[test]
+        fn test_amp_receive_returns_error() {
+            let contract = ADOContract::default();
+            let mut deps = mock_dependencies();
+
+            let owner = deps.api.addr_make("owner");
+            let info = message_info(&owner, &[]);
+            let deps_mut = deps.as_mut();
+            contract
+                .instantiate(
+                    deps_mut.storage,
+                    mock_env(),
+                    deps_mut.api,
+                    &deps_mut.querier,
+                    info.clone(),
+                    InstantiateMsg {
+                        ado_type: "type".to_string(),
+                        ado_version: "version".to_string(),
+                        kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
+                        owner: None,
+                    },
+                )
+                .unwrap();
+
+            let amp_pkt = AMPPkt::new("sender", "sender", vec![]);
+            let msg = AndromedaMsg::AMPReceive(amp_pkt);
+            let ctx = ExecuteContext::new(deps.as_mut(), info, mock_env());
+            let err = contract.execute(ctx, msg).unwrap_err();
+
+            assert_eq!(err, ContractError::UnsupportedOperation {});
         }
     }
 
