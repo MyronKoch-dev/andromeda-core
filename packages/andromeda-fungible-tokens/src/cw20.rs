@@ -1,6 +1,7 @@
 use andromeda_std::{amp::AndrAddr, andr_exec, andr_instantiate, andr_query};
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Binary, Uint128};
+use andromeda_std::error::ContractError;
 use cw20::{Cw20Coin, Logo, MinterResponse};
 use cw20_base::msg::{
     ExecuteMsg as Cw20ExecuteMsg, InstantiateMarketingInfo, InstantiateMsg as Cw20InstantiateMsg,
@@ -101,74 +102,76 @@ pub enum ExecuteMsg {
     UploadLogo(Logo),
 }
 
-impl From<ExecuteMsg> for Cw20ExecuteMsg {
-    fn from(msg: ExecuteMsg) -> Self {
+impl TryFrom<ExecuteMsg> for Cw20ExecuteMsg {
+    type Error = ContractError;
+
+    fn try_from(msg: ExecuteMsg) -> Result<Self, Self::Error> {
         match msg {
-            ExecuteMsg::Transfer { recipient, amount } => Cw20ExecuteMsg::Transfer {
+            ExecuteMsg::Transfer { recipient, amount } => Ok(Cw20ExecuteMsg::Transfer {
                 recipient: recipient.to_string(),
                 amount,
-            },
-            ExecuteMsg::Burn { amount } => Cw20ExecuteMsg::Burn { amount },
+            }),
+            ExecuteMsg::Burn { amount } => Ok(Cw20ExecuteMsg::Burn { amount }),
             ExecuteMsg::Send {
                 contract,
                 amount,
                 msg,
-            } => Cw20ExecuteMsg::Send {
+            } => Ok(Cw20ExecuteMsg::Send {
                 contract: contract.to_string(),
                 amount,
                 msg,
-            },
+            }),
             ExecuteMsg::IncreaseAllowance {
                 spender,
                 amount,
                 expires,
-            } => Cw20ExecuteMsg::IncreaseAllowance {
+            } => Ok(Cw20ExecuteMsg::IncreaseAllowance {
                 spender,
                 amount,
                 expires,
-            },
+            }),
             ExecuteMsg::DecreaseAllowance {
                 spender,
                 amount,
                 expires,
-            } => Cw20ExecuteMsg::DecreaseAllowance {
+            } => Ok(Cw20ExecuteMsg::DecreaseAllowance {
                 spender,
                 amount,
                 expires,
-            },
+            }),
             ExecuteMsg::TransferFrom {
                 owner,
                 recipient,
                 amount,
-            } => Cw20ExecuteMsg::TransferFrom {
+            } => Ok(Cw20ExecuteMsg::TransferFrom {
                 owner,
                 recipient: recipient.to_string(),
                 amount,
-            },
+            }),
             ExecuteMsg::SendFrom {
                 owner,
                 contract,
                 amount,
                 msg,
-            } => Cw20ExecuteMsg::SendFrom {
+            } => Ok(Cw20ExecuteMsg::SendFrom {
                 owner,
                 contract: contract.to_string(),
                 amount,
                 msg,
-            },
-            ExecuteMsg::BurnFrom { owner, amount } => Cw20ExecuteMsg::BurnFrom { owner, amount },
-            ExecuteMsg::Mint { recipient, amount } => Cw20ExecuteMsg::Mint { recipient, amount },
+            }),
+            ExecuteMsg::BurnFrom { owner, amount } => Ok(Cw20ExecuteMsg::BurnFrom { owner, amount }),
+            ExecuteMsg::Mint { recipient, amount } => Ok(Cw20ExecuteMsg::Mint { recipient, amount }),
             ExecuteMsg::UpdateMarketing {
                 project,
                 description,
                 marketing,
-            } => Cw20ExecuteMsg::UpdateMarketing {
+            } => Ok(Cw20ExecuteMsg::UpdateMarketing {
                 project,
                 description,
                 marketing,
-            },
-            ExecuteMsg::UploadLogo(logo) => Cw20ExecuteMsg::UploadLogo(logo),
-            _ => panic!("Unsupported message"),
+            }),
+            ExecuteMsg::UploadLogo(logo) => Ok(Cw20ExecuteMsg::UploadLogo(logo)),
+            _ => Err(ContractError::UnsupportedExecuteMsg {}),
         }
     }
 }
@@ -229,28 +232,30 @@ pub enum QueryMsg {
     Balance { address: String },
 }
 
-impl From<QueryMsg> for Cw20QueryMsg {
-    fn from(msg: QueryMsg) -> Self {
+impl TryFrom<QueryMsg> for Cw20QueryMsg {
+    type Error = ContractError;
+
+    fn try_from(msg: QueryMsg) -> Result<Self, Self::Error> {
         match msg {
-            QueryMsg::Balance { address } => Cw20QueryMsg::Balance { address },
-            QueryMsg::TokenInfo {} => Cw20QueryMsg::TokenInfo {},
-            QueryMsg::Minter {} => Cw20QueryMsg::Minter {},
-            QueryMsg::Allowance { owner, spender } => Cw20QueryMsg::Allowance { owner, spender },
+            QueryMsg::Balance { address } => Ok(Cw20QueryMsg::Balance { address }),
+            QueryMsg::TokenInfo {} => Ok(Cw20QueryMsg::TokenInfo {}),
+            QueryMsg::Minter {} => Ok(Cw20QueryMsg::Minter {}),
+            QueryMsg::Allowance { owner, spender } => Ok(Cw20QueryMsg::Allowance { owner, spender }),
             QueryMsg::AllAllowances {
                 owner,
                 start_after,
                 limit,
-            } => Cw20QueryMsg::AllAllowances {
+            } => Ok(Cw20QueryMsg::AllAllowances {
                 owner,
                 start_after,
                 limit,
-            },
+            }),
             QueryMsg::AllAccounts { start_after, limit } => {
-                Cw20QueryMsg::AllAccounts { start_after, limit }
+                Ok(Cw20QueryMsg::AllAccounts { start_after, limit })
             }
-            QueryMsg::MarketingInfo {} => Cw20QueryMsg::MarketingInfo {},
-            QueryMsg::DownloadLogo {} => Cw20QueryMsg::DownloadLogo {},
-            _ => panic!("Unsupported Msg"),
+            QueryMsg::MarketingInfo {} => Ok(Cw20QueryMsg::MarketingInfo {}),
+            QueryMsg::DownloadLogo {} => Ok(Cw20QueryMsg::DownloadLogo {}),
+            _ => Err(ContractError::UnsupportedQuery {}),
         }
     }
 }
