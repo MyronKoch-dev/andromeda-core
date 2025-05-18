@@ -11,7 +11,7 @@ use andromeda_std::{
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{
     attr, ensure, instantiate2_address, to_json_binary, wasm_execute, Addr, Api, Binary,
-    CodeInfoResponse, Deps, Event, QuerierWrapper, SubMsg, WasmMsg,
+    CodeInfoResponse, Deps, Event, QuerierWrapper, StdError, SubMsg, WasmMsg,
 };
 use serde::Serialize;
 
@@ -51,18 +51,21 @@ impl ComponentType {
     pub fn verify(&self) -> Result<(), ContractError> {
         match self {
             ComponentType::New(msg) => {
-                if msg.is_empty() {
-                    panic!("instantiate_msg cannot be empty");
-                }
+                ensure!(
+                    !msg.is_empty(),
+                    ContractError::Std(StdError::generic_err("instantiate_msg cannot be empty"))
+                );
             }
             ComponentType::Symlink(_) => {}
             ComponentType::CrossChain(cross_chain) => {
-                if cross_chain.chain.is_empty() {
-                    panic!("chain cannot be empty");
-                }
-                if cross_chain.instantiate_msg.is_empty() {
-                    panic!("instantiate_msg cannot be empty");
-                }
+                ensure!(
+                    !cross_chain.chain.is_empty(),
+                    ContractError::Std(StdError::generic_err("chain cannot be empty"))
+                );
+                ensure!(
+                    !cross_chain.instantiate_msg.is_empty(),
+                    ContractError::Std(StdError::generic_err("instantiate_msg cannot be empty"))
+                );
             }
         }
         Ok(())
@@ -106,12 +109,14 @@ impl AppComponent {
     }
 
     pub fn verify(&self, _deps: &Deps) -> Result<(), ContractError> {
-        if self.name.is_empty() {
-            panic!("name cannot be empty");
-        }
-        if self.ado_type.is_empty() {
-            panic!("ado_type cannot be empty");
-        }
+        ensure!(
+            !self.name.is_empty(),
+            ContractError::Std(StdError::generic_err("name cannot be empty"))
+        );
+        ensure!(
+            !self.ado_type.is_empty(),
+            ContractError::Std(StdError::generic_err("ado_type cannot be empty"))
+        );
         self.component_type.verify()?;
         Ok(())
     }
