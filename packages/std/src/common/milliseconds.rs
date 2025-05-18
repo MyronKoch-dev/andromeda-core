@@ -1,6 +1,7 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{BlockInfo, Timestamp};
+use cosmwasm_std::{ensure, BlockInfo, Timestamp};
 use cw20::Expiration;
+use crate::error::ContractError;
 
 #[cw_serde]
 #[derive(Default, Eq, PartialOrd, Copy)]
@@ -31,12 +32,12 @@ impl Milliseconds {
     }
 
     #[inline]
-    pub fn from_seconds(seconds: u64) -> Milliseconds {
-        if seconds > u64::MAX / 1000 {
-            panic!("Overflow: Cannot convert seconds to milliseconds")
-        }
-
-        Milliseconds(seconds * 1000)
+    pub fn from_seconds(seconds: u64) -> Result<Milliseconds, ContractError> {
+        ensure!(
+            seconds <= u64::MAX / 1_000,
+            ContractError::Overflow {}
+        );
+        Ok(Milliseconds(seconds * 1_000))
     }
 
     #[inline]
@@ -55,11 +56,12 @@ impl Milliseconds {
     }
 
     #[inline]
-    pub fn nanos(&self) -> u64 {
-        if self.0 > u64::MAX / 1000000 {
-            panic!("Overflow: Cannot convert milliseconds time to nanoseconds")
-        }
-        self.0 * 1000000
+    pub fn nanos(&self) -> Result<u64, ContractError> {
+        ensure!(
+            self.0 <= u64::MAX / 1_000_000,
+            ContractError::Overflow {}
+        );
+        Ok(self.0 * 1_000_000)
     }
 
     pub fn add_milliseconds(&mut self, milliseconds: Milliseconds) {
@@ -82,12 +84,13 @@ impl Milliseconds {
         self.0 += seconds * 1000;
     }
 
-    pub fn subtract_seconds(&mut self, seconds: u64) {
-        if seconds > self.0 / 1000 {
-            panic!("Overflow: Cannot subtract seconds from milliseconds")
-        }
-
-        self.0 -= seconds * 1000;
+    pub fn subtract_seconds(&mut self, seconds: u64) -> Result<(), ContractError> {
+        ensure!(
+            seconds <= self.0 / 1_000,
+            ContractError::Underflow {}
+        );
+        self.0 -= seconds * 1_000;
+        Ok(())
     }
 
     pub fn plus_seconds(self, seconds: u64) -> Milliseconds {
@@ -107,7 +110,11 @@ impl From<Milliseconds> for String {
 
 impl From<Milliseconds> for Timestamp {
     fn from(time: Milliseconds) -> Timestamp {
-        Timestamp::from_nanos(time.nanos())
+        Timestamp::from_nanos(
+            time
+                .nanos()
+                .expect("Overflow converting Milliseconds to Timestamp"),
+        )
     }
 }
 
