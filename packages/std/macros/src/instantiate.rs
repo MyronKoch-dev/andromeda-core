@@ -24,6 +24,11 @@ pub(crate) fn enum_implementation(_args: TokenStream, input: TokenStream) -> Tok
             }
             .into()
         }
-        _ => panic!("Macro only works with structs"),
+        _ => {
+            return quote! {
+                compile_error!("Macro only works with structs");
+            }
+            .into();
+        }
     }
 }

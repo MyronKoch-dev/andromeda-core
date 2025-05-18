@@ -55,7 +55,11 @@ fn andr_exec_derive(input: DeriveInput) -> proc_macro2::TokenStream {
                 #input
             }
         }
-        _ => panic!("unions are not supported"),
+        _ => {
+            return parse_quote! {
+                compile_error!("unions are not supported");
+            };
+        }
     }
 }
 
