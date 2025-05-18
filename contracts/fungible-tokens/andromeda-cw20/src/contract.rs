@@ -141,9 +141,10 @@ fn handle_transfer(
 
             let recipient = recipient.get_raw_address(&deps.as_ref())?.into_string();
             let cw20_msg = if is_transfer_from {
+                let owner = owner.ok_or(ContractError::MissingParameters {})?;
                 Cw20ExecuteMsg::TransferFrom {
                     recipient,
-                    owner: owner.expect("Owner should be provided for TransferFrom"),
+                    owner,
                     amount: remaining_amount,
                 }
             } else {
@@ -163,9 +164,10 @@ fn handle_transfer(
         None => {
             let recipient = recipient.get_raw_address(&deps.as_ref())?.into_string();
             let cw20_msg = if is_transfer_from {
+                let owner = owner.ok_or(ContractError::MissingParameters {})?;
                 Cw20ExecuteMsg::TransferFrom {
                     recipient,
-                    owner: owner.expect("Owner should be provided for TransferFrom"),
+                    owner,
                     amount,
                 }
             } else {
@@ -271,11 +273,12 @@ fn handle_send(
             )?;
             let contract = contract.get_raw_address(&deps.as_ref())?.to_string();
             let cw20_msg = if is_send_from {
+                let owner = owner.ok_or(ContractError::MissingParameters {})?;
                 Cw20ExecuteMsg::SendFrom {
                     contract,
                     amount: remaining_amount,
                     msg,
-                    owner: owner.expect("Owner should be provided for SendFrom"),
+                    owner,
                 }
             } else {
                 Cw20ExecuteMsg::Send {
@@ -296,11 +299,12 @@ fn handle_send(
         None => {
             let contract = contract.get_raw_address(&deps.as_ref())?.to_string();
             let cw20_msg = if is_send_from {
+                let owner = owner.ok_or(ContractError::MissingParameters {})?;
                 Cw20ExecuteMsg::SendFrom {
                     contract,
                     amount,
                     msg,
-                    owner: owner.expect("Owner should be provided for SendFrom"),
+                    owner,
                 }
             } else {
                 Cw20ExecuteMsg::Send {
