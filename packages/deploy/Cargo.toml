@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 cosmwasm-std = { workspace = true }
-serde = { version = "1.0.219", default-features = false, features = ["derive"] }
+serde = { workspace = true }
 cw-orch = { workspace = true }
 cw-orch-daemon = "0.29.1"
 thiserror = "2.0.12"
@@ -19,7 +19,7 @@ env_logger = "0.11.8"
 log = "0.4"
 dotenv = "0.15.0"
 reqwest = { version = "0.12", features = ["json", "blocking"] }
-serde_json = "1.0"
+serde_json = { workspace = true }
 chrono = "0.4"
 
 # OS Contracts
@@ -79,16 +79,3 @@ andromeda-std = { workspace = true }
 [dev-dependencies]
 cw-multi-test = { workspace = true }
 
-[profile.release]
-opt-level = 3
-debug = false
-rpath = false
-lto = true
-debug-assertions = false
-codegen-units = 1
-panic = 'abort'
-incremental = false
-overflow-checks = true
-
-[build]
-incremental = true
